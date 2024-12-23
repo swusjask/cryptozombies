@@ -1,7 +1,7 @@
 const HDWalletProvider = require("truffle-hdwallet-provider");
 const LoomTruffleProvider = require("loom-truffle-provider");
 
-const mnemonic = "YOUR MNEMONIC HERE";
+const mnemonic = "move grief nation sort bid riot mail quick someone test arrest base";
 
 module.exports = {
   networks: {
@@ -52,7 +52,7 @@ module.exports = {
   },
   compilers: {
     solc: {
-      version: "0.4.25",
+      version: "0.7.0",
     },
   },
 };

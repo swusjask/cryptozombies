@@ -23,5 +23,9 @@
   "devDependencies": {
     "chai": "^4.2.0",
     "truffle": "^5.1.50"
+  },
+  "dependencies": {
+    "loom-truffle-provider": "^0.13.0",
+    "truffle-hdwallet-provider": "^1.0.17"
   }
 }

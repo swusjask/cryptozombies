@@ -1,145 +1,379 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>CryptoZombies front-end</title>
-    <script
-      language="javascript"
-      type="text/javascript"
-      src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"
-    ></script>
-    <script
-      language="javascript"
-      type="text/javascript"
-      src="web3.min.js"
-    ></script>
-    <script
-      language="javascript"
-      type="text/javascript"
-      src="cryptozombies_abi.js"
-    ></script>
-  </head>
 
-  <body>
-    <div id="txStatus"></div>
+<head>
+  <meta charset="UTF-8" />
+  <title>CryptoZombies front-end</title>
+  <script language="javascript" type="text/javascript"
+    src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.8.0/web3.min.js"></script>
+  <script language="javascript" type="text/javascript" src="cryptozombies_abi.js"></script>
+  <style>
+    /* Base Styles */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+      color: #333;
+    }
+
+    h2 {
+      color: #2c3e50;
+      border-bottom: 2px solid #3498db;
+      padding-bottom: 10px;
+      margin-top: 30px;
+    }
+
+    /* Status Message Styling */
+    #txStatus {
+      display: none;
+      /* Hidden by default */
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 5px;
+      background-color: #f8f9fa;
+      border-left: 4px solid #3498db;
+      font-weight: 500;
+    }
+
+
+    #txStatus:not(:empty) {
+      display: block;
+      /* Show only when there's content */
+    }
+
+    /* Form Sections */
+    .section {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+
+    /* Input Fields */
+    input[type="text"] {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
+      font-size: 16px;
+    }
+
+    input[type="text"]:focus {
+      border-color: #3498db;
+      outline: none;
+      box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+    }
+
+    /* Buttons */
+    button {
+      background-color: #3498db;
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #2980b9;
+    }
+
+    /* Feed on Kitty Section */
+    .feed-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    /* Zombie Card Specific Styles */
+    .zombie {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 15px 0;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .zombie:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .zombie-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .zombie-header h3 {
+      margin: 0;
+      color: #2c3e50;
+      font-size: 1.5em;
+    }
+
+    .zombie-id {
+      color: #7f8c8d;
+      font-size: 0.9em;
+      padding: 4px 8px;
+      background: #f7f9fc;
+      border-radius: 4px;
+    }
+
+    .zombie-stats {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .stat {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+    }
+
+    .stat label {
+      color: #7f8c8d;
+      font-weight: 500;
+    }
+
+    .stat span {
+      color: #2c3e50;
+      font-weight: 600;
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .stat-row .stat {
+      flex: 1;
+      background: #f7f9fc;
+      padding: 8px 12px;
+      border-radius: 4px;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+
+      .feed-section {
+        grid-template-columns: 1fr;
+      }
+
+      .stat-row {
+        flex-direction: column;
+        gap: 10px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="txStatus"></div>
+
+  <!-- Create Zombie Section -->
+  <div class="section">
+    <h2>Create a New Zombie</h2>
+    <input type="text" id="zombieName" placeholder="Enter zombie name" />
+    <button onclick="createRandomZombie($('#zombieName').val())">Create Zombie</button>
+  </div>
+
+  <!-- Zombies Display Section -->
+  <div class="section">
+    <h2>Your Zombies</h2>
     <div id="zombies"></div>
+  </div>
 
-    <script>
-      var cryptoZombies;
-      var userAccount;
+  <!-- Level Up Section -->
+  <div class="section">
+    <h2>Level Up Your Zombie</h2>
+    <input type="text" id="levelUpId" placeholder="Enter zombie ID" />
+    <button onclick="levelUp($('#levelUpId').val())">Level Up</button>
+  </div>
 
-      function startApp() {
-        var cryptoZombiesAddress = "YOUR_CONTRACT_ADDRESS";
-        cryptoZombies = new web3js.eth.Contract(
-          cryptoZombiesABI,
-          cryptoZombiesAddress
-        );
+  <!-- Feed on Kitty Section -->
+  <div class="section">
+    <h2>Feed on Kitty</h2>
+    <div class="feed-section">
+      <input type="text" id="zombieId" placeholder="Your zombie ID" />
+      <input type="text" id="kittyId" placeholder="Kitty ID to feed on" />
+    </div>
+    <button onclick="feedOnKitty($('#zombieId').val(), $('#kittyId').val())">Feed on Kitty</button>
+  </div>
 
-        var accountInterval = setInterval(function () {
-          if (web3.eth.accounts[0] !== userAccount) {
-            userAccount = web3.eth.accounts[0];
 
-            getZombiesByOwner(userAccount).then(displayZombies);
-          }
-        }, 100);
+  <script>
+    var cryptoZombies;
+    var userAccount;
 
-        cryptoZombies.events
-          .Transfer({ filter: { _to: userAccount } })
-          .on("data", function (event) {
-            let data = event.returnValues;
-            getZombiesByOwner(userAccount).then(displayZombies);
-          })
-          .on("error", console.error);
-      }
+    async function startApp() {
+      var cryptoZombiesAddress = "0x9109423B9A27E551f6D11AaAa8e350F0f3d4c93F";
+      cryptoZombies = new web3js.eth.Contract(cryptoZombiesABI, cryptoZombiesAddress);
 
-      function displayZombies(ids) {
-        $("#zombies").empty();
-        for (id of ids) {
-          getZombieDetails(id).then(function (zombie) {
-            $("#zombies").append(`<div class="zombie">
-              <ul>
-                <li>Name: ${zombie.name}</li>
-                <li>DNA: ${zombie.dna}</li>
-                <li>Level: ${zombie.level}</li>
-                <li>Wins: ${zombie.winCount}</li>
-                <li>Losses: ${zombie.lossCount}</li>
-                <li>Ready Time: ${zombie.readyTime}</li>
-              </ul>
-            </div>`);
-          });
+      try {
+        // Get the accounts immediately when app starts
+        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+        userAccount = accounts[0];
+
+        // Set up account change listener
+        window.ethereum.on('accountsChanged', function (accounts) {
+          userAccount = accounts[0];
+          getZombiesByOwner(userAccount).then(displayZombies);
+        });
+
+        if (userAccount) {
+          getZombiesByOwner(userAccount).then(displayZombies);
         }
+      } catch (error) {
+        console.error("Error getting accounts:", error);
       }
+    }
 
-      function createRandomZombie(name) {
-        $("#txStatus").text(
-          "Creating new zombie on the blockchain. This may take a while..."
-        );
+    function displayZombies(ids) {
+      $("#zombies").empty();
+      for (id of ids) {
+        getZombieDetails(id).then(function (zombie) {
+          // Generate a random color based on zombie DNA
+          const zombieColor = `hsl(${zombie.dna % 360}, 50%, 50%)`;
 
-        return cryptoZombies.methods
-          .createRandomZombie(name)
-          .send({ from: userAccount })
-          .on("receipt", function (receipt) {
-            $("#txStatus").text("Successfully created " + name + "!");
+          // Convert timestamp to readable date
+          const readyTime = new Date(zombie.readyTime * 1000).toLocaleString();
 
-            getZombiesByOwner(userAccount).then(displayZombies);
-          })
-          .on("error", function (error) {
-            $("#txStatus").text(error);
-          });
+          // Calculate level stars based on zombie level
+          const levelStars = '⭐'.repeat(Math.min(5, zombie.level));
+
+          $("#zombies").append(`
+                <div class="zombie" style="border-left: 4px solid ${zombieColor}">
+                    <div class="zombie-header">
+                        <h3>${zombie.name}</h3>
+                        <div class="zombie-id">ID: ${id}</div>
+                    </div>
+                    <div class="zombie-stats">
+                        <div class="stat">
+                            <label>Level:</label>
+                            <span>${zombie.level} ${levelStars}</span>
+                        </div>
+                        <div class="stat">
+                            <label>DNA:</label>
+                            <span>${zombie.dna}</span>
+                        </div>
+                        <div class="stat-row">
+                            <div class="stat">
+                                <label>Wins:</label>
+                                <span>${zombie.winCount}</span>
+                            </div>
+                            <div class="stat">
+                                <label>Losses:</label>
+                                <span>${zombie.lossCount}</span>
+                            </div>
+                        </div>
+                        <div class="stat">
+                            <label>Ready Time:</label>
+                            <span>${readyTime}</span>
+                        </div>
+                    </div>
+                </div>
+            `);
+        });
       }
+    }
 
-      function feedOnKitty(zombieId, kittyId) {
-        $("#txStatus").text("Eating a kitty. This may take a while...");
-        return cryptoZombies.methods
-          .feedOnKitty(zombieId, kittyId)
-          .send({ from: userAccount })
-          .on("receipt", function (receipt) {
-            $("#txStatus").text("Ate a kitty and spawned a new Zombie!");
-            getZombiesByOwner(userAccount).then(displayZombies);
-          })
-          .on("error", function (error) {
-            $("#txStatus").text(error);
-          });
-      }
+    function createRandomZombie(name) {
+      $("#txStatus").text(
+        "Creating new zombie on the blockchain. This may take a while..."
+      );
+      return cryptoZombies.methods
+        .createRandomZombie(name)
+        .send({ from: userAccount })
+        .on("receipt", function (receipt) {
+          $("#txStatus").text("Successfully created " + name + "!");
 
-      function levelUp(zombieId) {
-        $("#txStatus").text("Leveling up your zombie...");
-        return cryptoZombies.methods
-          .levelUp(zombieId)
-          .send({
-            from: userAccount,
-            value: web3.utils.toWei("0.001", "ether"),
-          })
-          .on("receipt", function (receipt) {
-            $("#txStatus").text(
-              "Power overwhelming! Zombie successfully leveled up"
-            );
-          })
-          .on("error", function (error) {
-            $("#txStatus").text(error);
-          });
-      }
+          getZombiesByOwner(userAccount).then(displayZombies);
+        })
+        .on("error", function (error) {
+          $("#txStatus").text(error);
+        });
+    }
 
-      function getZombieDetails(id) {
-        return cryptoZombies.methods.zombies(id).call();
-      }
+    function feedOnKitty(zombieId, kittyId) {
+      $("#txStatus").text("Eating a kitty. This may take a while...");
+      return cryptoZombies.methods
+        .feedOnKitty(zombieId, kittyId)
+        .send({ from: userAccount })
+        .on("receipt", function (receipt) {
+          $("#txStatus").text("Ate a kitty and spawned a new Zombie!");
+          getZombiesByOwner(userAccount).then(displayZombies);
+        })
+        .on("error", function (error) {
+          $("#txStatus").text(error);
+        });
+    }
 
-      function zombieToOwner(id) {
-        return cryptoZombies.methods.zombieToOwner(id).call();
-      }
+    function levelUp(zombieId) {
+      $("#txStatus").text("Leveling up your zombie...");
+      return cryptoZombies.methods
+        .levelUp(zombieId)
+        .send({
+          from: userAccount,
+          value: web3js.utils.toWei("0.001", "ether"),
+        })
+        .on("receipt", function (receipt) {
+          $("#txStatus").text(
+            "Power overwhelming! Zombie successfully leveled up"
+          );
+          getZombiesByOwner(userAccount).then(displayZombies);
+        })
+        .on("error", function (error) {
+          $("#txStatus").text(error);
+        });
+    }
 
-      function getZombiesByOwner(owner) {
-        return cryptoZombies.methods.getZombiesByOwner(owner).call();
-      }
+    function getZombieDetails(id) {
+      return cryptoZombies.methods.zombies(id).call();
+    }
 
-      window.addEventListener("load", function () {
-        if (typeof web3 !== "undefined") {
-          web3js = new Web3(web3.currentProvider);
-        } else {
+    function zombieToOwner(id) {
+      return cryptoZombies.methods.zombieToOwner(id).call();
+    }
+
+    function getZombiesByOwner(owner) {
+      return cryptoZombies.methods.getZombiesByOwner(owner).call();
+    }
+
+    window.addEventListener('load', async function () {
+      // Modern dapp browsers...
+      if (window.ethereum) {
+        try {
+          // Request account access
+          await window.ethereum.request({ method: 'eth_requestAccounts' });
+          web3js = new Web3(window.ethereum);
+          startApp();
+        } catch (error) {
+          console.log(error);
         }
+      } else {
+        console.log('Please install MetaMask!');
+      }
+    });
+  </script>
+</body>
 
-        startApp();
-      });
-    </script>
-  </body>
 </html>
