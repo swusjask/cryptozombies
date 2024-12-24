@@ -225,7 +225,7 @@
     var userAccount;
 
     async function startApp() {
-      var cryptoZombiesAddress = "0x9109423B9A27E551f6D11AaAa8e350F0f3d4c93F";
+      var cryptoZombiesAddress = "YOUR_CONTRACT_ADDRESS";
       cryptoZombies = new web3js.eth.Contract(cryptoZombiesABI, cryptoZombiesAddress);
 
       try {
@@ -370,7 +370,7 @@
           console.log(error);
         }
       } else {
-        console.log('Please install MetaMask!');
+        console.log('Please install Web3 wallet!');
       }
     });
   </script>
