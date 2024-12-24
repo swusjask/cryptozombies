@@ -52,6 +52,11 @@ contract("CryptoZombies", (accounts) => {
       await contractInstance.transferFrom(alice, bob, zombieId, { from: bob });
       const newOwner = await contractInstance.ownerOf(zombieId);
       expect(newOwner).to.equal(bob);
+
+      const aliceBalance = await contractInstance.balanceOf(alice);
+      expect(aliceBalance.toNumber()).to.equal(0);
+      const bobBalance = await contractInstance.balanceOf(bob);
+      expect(bobBalance.toNumber()).to.equal(1);
     });
 
     it("should approve and then transfer a zombie when the owner calls transferForm", async () => {
@@ -65,6 +70,10 @@ contract("CryptoZombies", (accounts) => {
       });
       const newOwner = await contractInstance.ownerOf(zombieId);
       expect(newOwner).to.equal(bob);
+      const aliceBalance = await contractInstance.balanceOf(alice);
+      expect(aliceBalance.toNumber()).to.equal(0);
+      const bobBalance = await contractInstance.balanceOf(bob);
+      expect(bobBalance.toNumber()).to.equal(1);
     });
   });
 
